@@ -147,7 +147,7 @@ module.exports = function(RED) {
 
             node.child.stdout.on('data', function (data) {
                 if (RED.settings.verbose) { node.log("out: "+data+" :"); }
-                if data == "Starting background thread..." { node.status({fill:"green",shape:"dot",text:"OK"}); }
+                if (data.toString().trim() == "Starting background thread...") { node.status({fill:"green",shape:"dot",text:"OK"}); }
             });
 
             node.child.stderr.on('data', function (data) {

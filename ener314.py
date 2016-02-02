@@ -60,9 +60,9 @@ GPIO.output(ener314_enable, False)
 GPIO.output(ener314_ModSel, False)
 
 
-print ("Enter items to be added to the queue - they will be returned (roughly)"
-       "3 seconds apart")
-print "Enter 'exit' to exit."
+# print ("Enter items to be added to the queue - they will be returned (roughly)"
+#        "3 seconds apart")
+# print "Enter 'exit' to exit."
 
 
 def bg():
@@ -73,12 +73,13 @@ def bg():
                 item = queue.popleft()
                 # print "Next item: switch", item[0], "-", item[1].title()
                 send(item[0], item[1])
+                print item[0], "-", item[1].title()
                 exitflag.wait(3)
             if len(queue) > 0:
-                print len(queue), "items left in queue!"
+                # print len(queue), "items left in queue!"
                 pass
             else:
-                print "No items left!"
+                # print "No items left!"
                 pass
     print "Stopping background thread..."
 
@@ -87,43 +88,43 @@ def send(switch, value):
         GPIO.output(ener314_D0, 1)
         GPIO.output(ener314_D1, 1)
         GPIO.output(ener314_D2, 1)
-        print "Switch 1",
+        # print "Switch 1",
     elif switch == "2":
         GPIO.output(ener314_D0, 0)
         GPIO.output(ener314_D1, 1)
         GPIO.output(ener314_D2, 1)
-        print "Switch 2",
+        # print "Switch 2",
     elif switch == "3":
         GPIO.output(ener314_D0, 1)
         GPIO.output(ener314_D1, 0)
         GPIO.output(ener314_D2, 1)
-        print "Switch 3",
+        # print "Switch 3",
     elif switch == "4":
         GPIO.output(ener314_D0, 0)
         GPIO.output(ener314_D1, 0)
         GPIO.output(ener314_D2, 1)
-        print "Switch 4",
+        # print "Switch 4",
     elif switch == "all":
         GPIO.output(ener314_D0, 1)
         GPIO.output(ener314_D1, 1)
         GPIO.output(ener314_D2, 0)
-        print "All switches",
+        # print "All switches",
     if value == "on":
         GPIO.output(ener314_D3, 1)
-        print "On",
+        # print "On",
     else:
         GPIO.output(ener314_D3, 0)
-        print "Off",
+        # print "Off",
     # let it settle, encoder requires this
     sleep(0.1)	
     # Enable the modulator
-    print "- sending...",
+    # print "- sending...",
     GPIO.output(ener314_enable, True)
     # keep enabled for a period
     sleep(0.25)
     # Disable the modulator
     GPIO.output(ener314_enable, False)
-    print "done!"
+    # print "done!"
 
 
 queue = deque()
