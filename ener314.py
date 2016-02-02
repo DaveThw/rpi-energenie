@@ -31,6 +31,12 @@ try:
     # set the pins numbering mode
     GPIO.setmode(GPIO.BOARD)
     
+    if GPIO.gpio_function(ener314_D0) == GPIO.OUT :
+        # GPIO pin is already in use - might be another / a previous instance of this script
+        # ...so wait 5s before trying to set things up
+        print("GPIO pins currently in use - waiting 5 seconds...")
+        sleep(5)
+
     # Select the GPIO pins used for the encoder K0-K3 data inputs
     GPIO.setup(ener314_D0, GPIO.OUT)
     GPIO.setup(ener314_D1, GPIO.OUT)
