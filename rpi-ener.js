@@ -139,7 +139,7 @@ module.exports = function(RED) {
                 node.child.stdin.write(node.socket+" "+node.state+"\n");
                 node.status({fill:"green",shape:"ring",text:node.state});
             } else {
-                node.status({fill:"green",shape:"dot",text:"OK"});
+                node.status({fill:"green",shape:"ring",text:"OK"});
             }
             node.running = true;
 
@@ -147,6 +147,7 @@ module.exports = function(RED) {
 
             node.child.stdout.on('data', function (data) {
                 if (RED.settings.verbose) { node.log("out: "+data+" :"); }
+                if data == "Starting background thread..." { node.status({fill:"green",shape:"dot",text:"OK"}); }
             });
 
             node.child.stderr.on('data', function (data) {
