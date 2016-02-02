@@ -121,9 +121,13 @@ module.exports = function(RED) {
             var out = Number(msg.payload);
             if ((out >= 0) && (out <= 1)) {
                 if (RED.settings.verbose) { node.log("inp: "+msg.payload); }
-                if (node.child !== null) { node.child.stdin.write(this.socket+" "+out+"\n"); }
-                else { node.warn("Command not running"); }
-                node.status({fill:"green",shape:"ring",text:msg.payload});
+                if (node.child !== null) {
+                    node.child.stdin.write(this.socket+" "+out+"\n");
+                    node.status({fill:"green", shape:"ring", text:msg.payload});
+                } else {
+                    node.warn("Command not running");
+                    node.status({fill:"red", shape:"ring", ""});
+                }
             }
             else { node.warn("Invalid input: "+out); }
         }
