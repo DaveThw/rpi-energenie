@@ -123,7 +123,7 @@ module.exports = function(RED) {
                 if (RED.settings.verbose) { node.log("inp: "+msg.payload); }
                 if (node.child !== null) { node.child.stdin.write(this.socket+" "+out+"\n"); }
                 else { node.warn("Command not running"); }
-                node.status({fill:"green",shape:"circle",text:msg.payload});
+                node.status({fill:"green",shape:"ring",text:msg.payload});
             }
             else { node.warn("Invalid input: "+out); }
         }
@@ -132,7 +132,7 @@ module.exports = function(RED) {
             node.child = spawn(gpioCommand, []);
             if (node.set) {
                 node.child.stdin.write(node.socket+" "+node.state+"\n");
-                node.status({fill:"green",shape:"circle",text:node.state});
+                node.status({fill:"green",shape:"ring",text:node.state});
             } else {
                 node.status({fill:"green",shape:"dot",text:"OK"});
             }
@@ -152,7 +152,7 @@ module.exports = function(RED) {
                 if (RED.settings.verbose) { node.log("ret: "+code+" :"); }
                 node.child = null;
                 node.running = false;
-                node.status({fill:"red",shape:"circle",text:""});
+                node.status({fill:"red",shape:"ring",text:""});
             });
 
             node.child.on('error', function (err) {
@@ -170,7 +170,7 @@ module.exports = function(RED) {
                 node.child.stdin.write("exit");
                 node.child.kill('SIGKILL');
             }
-            node.status({fill:"red",shape:"circle",text:""});
+            node.status({fill:"red",shape:"ring",text:""});
             if (RED.settings.verbose) { node.log("end"); }
         });
 
