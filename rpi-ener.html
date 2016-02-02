@@ -1,0 +1,84 @@
+<!--
+  Copyright 2015 Dave Thwaites
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<script type="text/x-red" data-template-name="rpi-ener314">
+    <div class="form-row">
+        <label for="node-input-socket"><i class="fa fa-circle"></i> Output</label>
+        <select type="text" id="node-input-socket" style="width: 150px;">
+            <option value='' disabled selected style='display:none;'>select output</option>
+            <option value="1">Socket 1</option>
+            <option value="2">Socket 2</option>
+            <option value="3">Socket 3</option>
+            <option value="4">Socket 4</option>
+            <option value="All">All Sockets</option>
+         </select>
+    </div>
+    <div class="form-row" id="node-set-check">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-set" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-set" style="width: 70%;">Initialise socket?</label>
+    </div>
+    <div class="form-row" id="node-set-state" hidden>
+        <label for="node-input-state">&nbsp;</label>
+        <select id="node-input-state" style="width: 300px;">
+            <option value="0">initial state: off</option>
+            <option value="1">initial state: on</option>
+        </select>
+    </div>
+    <br/>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="rpi-ener314">
+    <p>Raspberry Pi ENER314 output node. The ENER314 board must be fitted.</p>
+    <p>Will send a signal to the selected switch to turn it on or off depending on the value passed in. Expects a <b>msg.payload</b> with either a 0 or 1 (or true or false).</p>
+    <p>Requires the RPi.GPIO python library version 0.5.8 (or better) in order to work.</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('rpi-ener314',{
+        category: 'Raspberry Pi',
+        color:"#c6dbef",
+        defaults: {
+            name: { value:"" },
+            socket: { value:"",required:true },
+            set: { value:false },
+            state: { value:"0" },
+        },
+        inputs:1,
+        outputs:0,
+        icon: "rpi.png",
+        align: "right",
+        label: function() {
+            return this.name||this.socket||"ENER314";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function() {
+            $("#node-input-set").change(function() {
+                if ($('#node-input-set').is(":checked")) {
+                    $("#node-set-state").show();
+                } else {
+                    $("#node-set-state").hide();
+                }
+            });
+        }
+    });
+</script>
