@@ -118,15 +118,16 @@ module.exports = function(RED) {
         function inputlistener(msg) {
             if (msg.payload === "true") { msg.payload = true; }
             if (msg.payload === "false") { msg.payload = false; }
-            var out = Number(msg.payload);
-            if ((out >= 0) && (out <= 1)) {
+            var out = msg.payload.toString().trim().toLowerCase();
+            if (out == "on" || out == "off") {
+                out = "O"+out.substring(1);
                 if (RED.settings.verbose) { node.log("inp: "+msg.payload); }
                 if (node.child !== null) {
                     node.child.stdin.write(this.socket+" "+out+"\n");
-                    node.status({fill:"green", shape:"ring", text:msg.payload});
+                    node.status({fill:"green", shape:"ring", text:out});
                 } else {
                     node.warn("Command not running");
-                    node.status({fill:"red", shape:"ring", ""});
+                    node.status({fill:"red", shape:"ring", text:""});
                 }
             }
             else { node.warn("Invalid input: "+out); }
