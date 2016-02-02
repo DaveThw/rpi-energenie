@@ -127,7 +127,7 @@ module.exports = function(RED) {
                     node.status({fill:"green", shape:"ring", text:out});
                 } else {
                     node.warn("Command not running");
-                    node.status({fill:"red", shape:"ring", text:""});
+                    node.status({fill:"red", shape:"circle", text:"Not Running"});
                 }
             }
             else { node.warn("Invalid input: "+out); }
@@ -157,7 +157,7 @@ module.exports = function(RED) {
                 if (RED.settings.verbose) { node.log("ret: "+code+" :"); }
                 node.child = null;
                 node.running = false;
-                node.status({fill:"red",shape:"ring",text:""});
+                node.status({fill:"red", shape:"ring", text:"Closed"});
             });
 
             node.child.on('error', function (err) {
@@ -175,7 +175,7 @@ module.exports = function(RED) {
                 node.child.stdin.write("exit");
                 node.child.kill('SIGKILL');
             }
-            node.status({fill:"red",shape:"ring",text:""});
+            node.status({fill:"red", shape:"circle", text:"Closed"});
             if (RED.settings.verbose) { node.log("end"); }
         });
 
