@@ -108,12 +108,19 @@ module.exports = function(RED) {
 */
 
 
-    function ener314(n) {
+    function ener002(n) {
         RED.nodes.createNode(this,n);
+        this.pimote = RED.nodes.getNode(n.pimote);
         this.socket = n.socket;
         this.set = n.set || false;
         this.state = n.state || 0;
         var node = this;
+
+        if (this.pimote) {
+            // Pi-mote node configured! :-)
+        } else {
+            // No Pi-mote node configured...
+        }
 
         function inputlistener(msg) {
             if (msg.payload === "true") { msg.payload = true; }
@@ -181,7 +188,75 @@ module.exports = function(RED) {
         });
 
     }
-    RED.nodes.registerType("rpi-ener314",ener314);
+    RED.nodes.registerType("ener002",ener002);
+
+
+
+    function pimote(n) {
+        RED.nodes.createNode(this,n);
+        this.board = n.board;
+        this.defaultpins = n.defaultpins || false;
+        this.d0 = n.d0 || 0;
+        this.d1 = n.d1 || 0;
+        this.d2 = n.d2 || 0;
+        this.d3 = n.d3 || 0;
+        this.modsel = n.modsel || 0;
+        this.enable = n.enable || 0;
+        var node = this;
+
+/*
+        if (node.socket !== undefined) {
+            node.child = spawn(gpioCommand, []);
+            if (node.set) {
+                node.child.stdin.write(node.socket+" "+node.state+"\n");
+                node.status({fill:"green",shape:"ring",text:node.state});
+            } else {
+                node.status({fill:"green",shape:"ring",text:"OK"});
+            }
+            node.running = true;
+
+            node.on("input", inputlistener);
+
+            node.child.stdout.on('data', function (data) {
+                if (RED.settings.verbose) { node.log("out: "+data+" :"); }
+                if (data.toString().trim() == "Starting background thread...") { node.status({fill:"green",shape:"dot",text:"OK"}); }
+            });
+
+            node.child.stderr.on('data', function (data) {
+                if (RED.settings.verbose) { node.log("err: "+data+" :"); }
+            });
+
+            node.child.on('close', function (code) {
+                if (RED.settings.verbose) { node.log("ret: "+code+" :"); }
+                node.child = null;
+                node.running = false;
+                node.status({fill:"red", shape:"ring", text:"Closed"});
+            });
+
+            node.child.on('error', function (err) {
+                if (err.errno === "ENOENT") { node.warn('Command not found'); }
+                else if (err.errno === "EACCES") { node.warn('Command not executable'); }
+                else { node.log('error: ' + err); }
+            });
+
+        } else {
+            node.error("Invalid ENER314 socket: "+node.socket);
+        }
+
+        node.on("close", function() {
+            if (node.child != null) {
+                node.child.stdin.write("exit");
+                node.child.kill('SIGKILL');
+            }
+            node.status({fill:"red", shape:"circle", text:"Closed"});
+            if (RED.settings.verbose) { node.log("end"); }
+        });
+*/
+
+    }
+    RED.nodes.registerType("pimote",pimote);
+
+
 
 /*
     RED.httpAdmin.get('/rpi-pibpins/:id',RED.auth.needsPermission('rpi-pibrella.read'),function(req,res) {

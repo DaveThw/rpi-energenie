@@ -14,7 +14,11 @@
   limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="rpi-ener314">
+<script type="text/x-red" data-template-name="ener002">
+    <div class="form-row">
+        <label for="node-input-pimote">Pimote board</label>
+        <input id="node-input-pimote">
+    </div>
     <div class="form-row">
         <label for="node-input-socket"><i class="fa fa-circle"></i> Output</label>
         <select type="text" id="node-input-socket" style="width: 150px;">
@@ -45,28 +49,29 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="rpi-ener314">
-    <p>Raspberry Pi ENER314 output node. The ENER314 board must be fitted.</p>
-    <p>Will send a signal to the selected switch to turn it on or off depending on the value passed in. Expects a <b>msg.payload</b> with either a 0 or 1 (or true or false).</p>
+<script type="text/x-red" data-help-name="ener002">
+    <p>Output node to switch an Energenie ENER002 socket on and off. A suitable Pi-mote board must be fitted to your Raspberry Pi.</p>
+    <p>Will send a signal to the selected socket to turn it on or off depending on the value passed in. Expects a <b>msg.payload</b> with either 'On' or 'Off'.</p>
     <p>Requires the RPi.GPIO python library version 0.5.8 (or better) in order to work.</p>
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('rpi-ener314',{
+    RED.nodes.registerType('ener002',{
         category: 'Raspberry Pi',
         color:"#c6dbef",
         defaults: {
             name: { value:"" },
+            pimote: { value:"", type:"pimote", required:true },
             socket: { value:"",required:true },
             set: { value:false },
             state: { value:"0" },
         },
         inputs:1,
-        outputs:0,
+        outputs:1,
         icon: "rpi.png",
         align: "right",
         label: function() {
-            return this.name||this.socket||"ENER314";
+            return this.name||(this.socket?(this.socket=="All"?"All Sockets":"Socket "+this.socket):"ener002");
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";
@@ -77,6 +82,261 @@
                     $("#node-set-state").show();
                 } else {
                     $("#node-set-state").hide();
+                }
+            });
+        }
+    });
+</script>
+
+
+
+<script type="text/x-red" data-template-name="pimote">
+    <div class="form-row" id="node-set-board">
+        <label for="node-input-board">Board Type</label>
+        <select id="node-input-board" style="width: 300px;">
+            <option value='' disabled selected style='display:none;'>Select board</option>
+            <option value="ener314">Pi-mote (ENER314)</option>
+            <option value="ener314-rt" disabled>Two way Pi-mote (ENER314-RT)</option>
+            <option value="ener314-ir" disabled>Pi-mote IR (ENER314-IR)</option>
+        </select>
+    </div>
+    <div class="form-row" id="node-set-defaultpins">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-defaultpins" checked style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-defaultpins" style="width: 70%;">Use Default GPIO Pins?</label>
+    </div>
+    <div class="form-row" id="node-set-d0" hidden>
+        <label for="node-input-d0"><i class="fa fa-circle"></i> D0</label>
+        <select type="text" id="node-input-d0" style="width: 150px;">
+            <option value="1" disabled>Pin 1 - 3.3V</option>
+            <option value="2" disabled>Pin 2 - 5V</option>
+            <option value="3">Pin 3</option>
+            <option value="4" disabled>Pin 4 - 5V</option>
+            <option value="5">Pin 5</option>
+            <option value="6" disabled>Pin 6 - Ground</option>
+            <option value="7">Pin 7</option>
+            <option value="8">Pin 8</option>
+            <option value="9" disabled>Pin 9 - Ground</option>
+            <option value="10">Pin 10</option>
+            <option value="11" selected>Pin 11</option>
+            <option value="12">Pin 12</option>
+            <option value="13">Pin 13</option>
+            <option value="14" disabled>Pin 14 - Ground</option>
+            <option value="15">Pin 15</option>
+            <option value="16">Pin 16</option>
+            <option value="17" disabled>Pin 17 - 3.3V</option>
+            <option value="18">Pin 18</option>
+            <option value="19">Pin 19</option>
+            <option value="20" disabled>Pin 20 - Ground</option>
+            <option value="21">Pin 21</option>
+            <option value="22">Pin 22</option>
+            <option value="23">Pin 23</option>
+            <option value="24">Pin 24</option>
+            <option value="25" disabled>Pin 25 - Ground</option>
+            <option value="26">Pin 26</option>
+         </select>
+    </div>
+    <div class="form-row" id="node-set-d1" hidden>
+        <label for="node-input-d1"><i class="fa fa-circle"></i> D1</label>
+        <select type="text" id="node-input-d1" style="width: 150px;">
+            <option value="1" disabled>Pin 1 - 3.3V</option>
+            <option value="2" disabled>Pin 2 - 5V</option>
+            <option value="3">Pin 3</option>
+            <option value="4" disabled>Pin 4 - 5V</option>
+            <option value="5">Pin 5</option>
+            <option value="6" disabled>Pin 6 - Ground</option>
+            <option value="7">Pin 7</option>
+            <option value="8">Pin 8</option>
+            <option value="9" disabled>Pin 9 - Ground</option>
+            <option value="10">Pin 10</option>
+            <option value="11">Pin 11</option>
+            <option value="12">Pin 12</option>
+            <option value="13">Pin 13</option>
+            <option value="14" disabled>Pin 14 - Ground</option>
+            <option value="15" selected>Pin 15</option>
+            <option value="16">Pin 16</option>
+            <option value="17" disabled>Pin 17 - 3.3V</option>
+            <option value="18">Pin 18</option>
+            <option value="19">Pin 19</option>
+            <option value="20" disabled>Pin 20 - Ground</option>
+            <option value="21">Pin 21</option>
+            <option value="22">Pin 22</option>
+            <option value="23">Pin 23</option>
+            <option value="24">Pin 24</option>
+            <option value="25" disabled>Pin 25 - Ground</option>
+            <option value="26">Pin 26</option>
+         </select>
+    </div>
+    <div class="form-row" id="node-set-d2" hidden>
+        <label for="node-input-d2"><i class="fa fa-circle"></i> D2</label>
+        <select type="text" id="node-input-d2" style="width: 150px;">
+            <option value="1" disabled>Pin 1 - 3.3V</option>
+            <option value="2" disabled>Pin 2 - 5V</option>
+            <option value="3">Pin 3</option>
+            <option value="4" disabled>Pin 4 - 5V</option>
+            <option value="5">Pin 5</option>
+            <option value="6" disabled>Pin 6 - Ground</option>
+            <option value="7">Pin 7</option>
+            <option value="8">Pin 8</option>
+            <option value="9" disabled>Pin 9 - Ground</option>
+            <option value="10">Pin 10</option>
+            <option value="11">Pin 11</option>
+            <option value="12">Pin 12</option>
+            <option value="13">Pin 13</option>
+            <option value="14" disabled>Pin 14 - Ground</option>
+            <option value="15">Pin 15</option>
+            <option value="16" selected>Pin 16</option>
+            <option value="17" disabled>Pin 17 - 3.3V</option>
+            <option value="18">Pin 18</option>
+            <option value="19">Pin 19</option>
+            <option value="20" disabled>Pin 20 - Ground</option>
+            <option value="21">Pin 21</option>
+            <option value="22">Pin 22</option>
+            <option value="23">Pin 23</option>
+            <option value="24">Pin 24</option>
+            <option value="25" disabled>Pin 25 - Ground</option>
+            <option value="26">Pin 26</option>
+         </select>
+    </div>
+    <div class="form-row" id="node-set-d3" hidden>
+        <label for="node-input-d3"><i class="fa fa-circle"></i> D3</label>
+        <select type="text" id="node-input-d3" style="width: 150px;">
+            <option value="1" disabled>Pin 1 - 3.3V</option>
+            <option value="2" disabled>Pin 2 - 5V</option>
+            <option value="3">Pin 3</option>
+            <option value="4" disabled>Pin 4 - 5V</option>
+            <option value="5">Pin 5</option>
+            <option value="6" disabled>Pin 6 - Ground</option>
+            <option value="7">Pin 7</option>
+            <option value="8">Pin 8</option>
+            <option value="9" disabled>Pin 9 - Ground</option>
+            <option value="10">Pin 10</option>
+            <option value="11">Pin 11</option>
+            <option value="12">Pin 12</option>
+            <option value="13" selected>Pin 13</option>
+            <option value="14" disabled>Pin 14 - Ground</option>
+            <option value="15">Pin 15</option>
+            <option value="16">Pin 16</option>
+            <option value="17" disabled>Pin 17 - 3.3V</option>
+            <option value="18">Pin 18</option>
+            <option value="19">Pin 19</option>
+            <option value="20" disabled>Pin 20 - Ground</option>
+            <option value="21">Pin 21</option>
+            <option value="22">Pin 22</option>
+            <option value="23">Pin 23</option>
+            <option value="24">Pin 24</option>
+            <option value="25" disabled>Pin 25 - Ground</option>
+            <option value="26">Pin 26</option>
+         </select>
+    </div>
+    <div class="form-row" id="node-set-modsel" hidden>
+        <label for="node-input-modsel"><i class="fa fa-circle"></i> Mode Select</label>
+        <select type="text" id="node-input-modsel" style="width: 150px;">
+            <option value="1" disabled>Pin 1 - 3.3V</option>
+            <option value="2" disabled>Pin 2 - 5V</option>
+            <option value="3">Pin 3</option>
+            <option value="4" disabled>Pin 4 - 5V</option>
+            <option value="5">Pin 5</option>
+            <option value="6" disabled>Pin 6 - Ground</option>
+            <option value="7">Pin 7</option>
+            <option value="8">Pin 8</option>
+            <option value="9" disabled>Pin 9 - Ground</option>
+            <option value="10">Pin 10</option>
+            <option value="11">Pin 11</option>
+            <option value="12">Pin 12</option>
+            <option value="13">Pin 13</option>
+            <option value="14" disabled>Pin 14 - Ground</option>
+            <option value="15">Pin 15</option>
+            <option value="16">Pin 16</option>
+            <option value="17" disabled>Pin 17 - 3.3V</option>
+            <option value="18" selected>Pin 18</option>
+            <option value="19">Pin 19</option>
+            <option value="20" disabled>Pin 20 - Ground</option>
+            <option value="21">Pin 21</option>
+            <option value="22">Pin 22</option>
+            <option value="23">Pin 23</option>
+            <option value="24">Pin 24</option>
+            <option value="25" disabled>Pin 25 - Ground</option>
+            <option value="26">Pin 26</option>
+         </select>
+    </div>
+    <div class="form-row" id="node-set-enable" hidden>
+        <label for="node-input-enable"><i class="fa fa-circle"></i> Enable</label>
+        <select type="text" id="node-input-enable" style="width: 150px;">
+            <option value="1" disabled>Pin 1 - 3.3V</option>
+            <option value="2" disabled>Pin 2 - 5V</option>
+            <option value="3">Pin 3</option>
+            <option value="4" disabled>Pin 4 - 5V</option>
+            <option value="5">Pin 5</option>
+            <option value="6" disabled>Pin 6 - Ground</option>
+            <option value="7">Pin 7</option>
+            <option value="8">Pin 8</option>
+            <option value="9" disabled>Pin 9 - Ground</option>
+            <option value="10">Pin 10</option>
+            <option value="11">Pin 11</option>
+            <option value="12">Pin 12</option>
+            <option value="13">Pin 13</option>
+            <option value="14" disabled>Pin 14 - Ground</option>
+            <option value="15">Pin 15</option>
+            <option value="16">Pin 16</option>
+            <option value="17" disabled>Pin 17 - 3.3V</option>
+            <option value="18">Pin 18</option>
+            <option value="19">Pin 19</option>
+            <option value="20" disabled>Pin 20 - Ground</option>
+            <option value="21">Pin 21</option>
+            <option value="22" selected>Pin 22</option>
+            <option value="23">Pin 23</option>
+            <option value="24">Pin 24</option>
+            <option value="25" disabled>Pin 25 - Ground</option>
+            <option value="26">Pin 26</option>
+         </select>
+    </div>
+    <br/>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="pimote">
+    <p>Energenie Pi-mote configuration node. The Pi-mote board must be fitted.</p>
+    <p>Used by Energenie Socket nodes to communicate with the Pi-mote board.</p>
+    <p>Requires the RPi.GPIO python library version 0.5.8 (or better) in order to work.</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('pimote',{
+        category: 'config',
+        defaults: {
+            name: { value:"" },
+            board: { value:"", required:true },
+            defaultpins: { value:true },
+            d0: { value:"11" },
+            d1: { value:"15" },
+            d2: { value:"16" },
+            d3: { value:"13" },
+            modsel: { value:"18" },
+            enable: { value:"22" },
+        },
+        label: function() {
+            return this.name||this.board||"pimote";
+        },
+        oneditprepare: function() {
+            $("#node-input-defaultpins").change(function() {
+                if ($('#node-input-defaultpins').is(":checked")) {
+                    $("#node-set-d0").hide();
+                    $("#node-set-d1").hide();
+                    $("#node-set-d2").hide();
+                    $("#node-set-d3").hide();
+                    $("#node-set-modsel").hide();
+                    $("#node-set-enable").hide();
+                } else {
+                    $("#node-set-d0").show();
+                    $("#node-set-d1").show();
+                    $("#node-set-d2").show();
+                    $("#node-set-d3").show();
+                    $("#node-set-modsel").show();
+                    $("#node-set-enable").show();
                 }
             });
         }
