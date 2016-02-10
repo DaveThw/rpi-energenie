@@ -203,6 +203,11 @@ module.exports = function(RED) {
         this.modsel = n.modsel || 0;
         this.enable = n.enable || 0;
         var node = this;
+        if (RED.settings.verbose) {
+            node.log("board type: "+this.board+" :");
+            node.log("use default pins: "+this.defaultpins+" :");
+            node.log("node name: "+n.name+" :");
+        }
 
 /*
         if (node.socket !== undefined) {
