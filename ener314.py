@@ -94,7 +94,8 @@ def bg():
             else:
                 # print "No items left!"
                 pass
-    print "Stopping background thread..."
+        exitflag.wait(0.5)
+    # print "Stopping background thread..."
 
 def send(switch, value):
     if switch == "1":
@@ -170,7 +171,7 @@ while True:
             # print "len(queue) =", len(queue)
             # print "bg_thread.is_alive() =", bg_thread.is_alive()
     except (KeyboardInterrupt, EOFError, SystemExit):
-        print "Exiting..."
+        # print "Exiting..."
         exitflag.set()
         GPIO.cleanup()
         sys.exit(0)
