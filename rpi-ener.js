@@ -137,7 +137,7 @@ module.exports = function(RED) {
                     node.status({fill:"green", shape:"ring", text:out});
                 } else {
                     node.warn("Command not running");
-                    node.status({fill:"red", shape:"circle", text:"Not Running"});
+                    node.status({fill:"red", shape:"dot", text:"Not Running"});
                 }
             }
             else { node.warn("Invalid input: "+out); }
@@ -152,6 +152,7 @@ module.exports = function(RED) {
                 node.status({fill:"green",shape:"ring",text:"OK"});
             }
             node.running = true;
+            node.done = false;
 
             node.on("input", inputlistener);
 
@@ -168,7 +169,8 @@ module.exports = function(RED) {
                 if (RED.settings.verbose) { node.log("ret: "+code+" :"); }
                 node.child = null;
                 node.running = false;
-                node.status({fill:"red", shape:"ring", text:"Closed"});
+                node.status({fill:"red", shape:"dot", text:"Closed"});
+                if (node.done) { node.done(); }
             });
 
             node.child.on('error', function (err) {
@@ -181,13 +183,16 @@ module.exports = function(RED) {
             node.error("Invalid ENER314 socket: "+node.socket);
         }
 
-        node.on("close", function() {
+        node.on("close", function(done) {
             if (node.child != null) {
-                node.child.stdin.write("exit");
+                node.done = done;
+                // node.child.stdin.write("exit");
                 node.child.kill('SIGKILL');
+                // node.child.kill('SIGINT');
             }
-            node.status({fill:"red", shape:"circle", text:"Closed"});
+            node.status({fill:"red", shape:"ring", text:"Closing..."});
             if (RED.settings.verbose) { node.log("end"); }
+            if (node.child == null) { done(); }
         });
 
     }
@@ -256,7 +261,7 @@ module.exports = function(RED) {
                 node.child.stdin.write("exit");
                 node.child.kill('SIGKILL');
             }
-            node.status({fill:"red", shape:"circle", text:"Closed"});
+            node.status({fill:"red", shape:"dot", text:"Closed"});
             if (RED.settings.verbose) { node.log("end"); }
         });
 */
