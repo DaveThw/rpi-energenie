@@ -118,8 +118,11 @@ module.exports = function(RED) {
 
         if (this.pimote) {
             // Pi-mote node configured! :-)
+            if (RED.settings.verbose) { node.log("Pi-mote node: "+n.pimote); }
+            if (RED.settings.verbose) { node.log("Pi-mote board: "+node.pimote.board); }
         } else {
             // No Pi-mote node configured...
+            if (RED.settings.verbose) { node.log("No Pi-mote node configured..."); }
         }
 
         function inputlistener(msg) {
