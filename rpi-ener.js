@@ -41,20 +41,11 @@ module.exports = function(RED) {
 
     function ener002(n) {
         RED.nodes.createNode(this,n);
-        this.pimote = RED.nodes.getNode(n.pimote);
-        this.socket = n.socket;
-        this.set = n.set || false;
-        this.state = n.state || 0;
         var node = this;
-
-        if (this.pimote) {
-            // Pi-mote node configured! :-)
-            if (RED.settings.verbose) { node.log("Pi-mote node: '"+n.pimote+"'"); }
-            if (RED.settings.verbose) { node.log("Pi-mote board: '"+node.pimote.board+"'"); }
-        } else {
-            // No Pi-mote node configured...
-            if (RED.settings.verbose) { node.log("No Pi-mote node configured..."); }
-        }
+        node.pimote = RED.nodes.getNode(n.pimote);
+        node.socket = n.socket;
+        node.set = n.set || false;
+        node.state = n.state || 0;
 
         function inputlistener(msg) {
             if (msg.payload === "true") { msg.payload = true; }
@@ -62,9 +53,9 @@ module.exports = function(RED) {
             var out = msg.payload.toString().trim().toLowerCase();
             if (out == "on" || out == "off") {
                 out = "O"+out.substring(1);
-                if (RED.settings.verbose) { node.log("input: '"+msg.payload+"' => '"+out+"'"); }
-                if (node.child !== null) {
-                    node.child.stdin.write(this.socket+" "+out+"\n");
+                if (RED.settings.verbose) { node.log("input: '"+msg.payload+"' => '"+node.socket+" "+out+"'"); }
+                if (node.pimote.child !== null) {
+                    node.pimote.child.stdin.write(node.socket+" "+out+"\n");
                     node.status({fill:"green", shape:"ring", text:out});
                 } else {
                     node.warn("Command not running");
@@ -74,32 +65,97 @@ module.exports = function(RED) {
             else { node.warn("Invalid input: '"+out+"'"); }
         }
 
-        if (node.socket !== undefined) {
-            node.child = spawn(gpioCommand, []);
-            if (node.set) {
-                node.child.stdin.write(node.socket+" "+node.state+"\n");
-                node.status({fill:"green",shape:"ring",text:node.state});
+        if (node.pimote) {
+            // Pi-mote node configured! :-)
+            if (RED.settings.verbose) { node.log("Pi-mote node: '"+n.pimote+"'"); }
+            if (RED.settings.verbose) { node.log("Pi-mote board: '"+node.pimote.board+"'"); }
+
+            if (node.socket !== undefined) {
+                if (node.set) {
+                    node.pimote.child.stdin.write(node.socket+" "+node.state+"\n");
+                    node.status({fill:"green",shape:"ring",text:node.state});
+                } else {
+                    node.status({fill:"green",shape:"ring",text:"OK"});
+                }
+
+                node.on("input", inputlistener);
+
+                node.pimote.child.stdout.on('data', function (data) {
+                    var text=data.toString().trim().split('\n');
+                    for (var i = 0; i < text.length; i++) {
+                        if (text[i] == "Starting background thread...") { node.status({fill:"green",shape:"dot",text:"OK"}); }
+                    }
+                });
+
+                // node.pimote.child.stderr.on('data', function (data) {
+                //     var text=data.toString().trim();
+                // });
+
+                node.pimote.child.on('close', function (code, signal) {
+                    node.status({fill:"red", shape:"dot", text:"Closed"});
+                });
+
+                // node.pimote.child.on('exit', function (code, signal) {
+                // });
+
+                // node.pimote.child.on('error', function (err) {
+                // });
+
             } else {
-                node.status({fill:"green",shape:"ring",text:"OK"});
+                node.error("Invalid ENER314 socket: "+node.socket);
             }
+        } else {
+            // No Pi-mote node configured...
+            node.error("No Pi-mote node configured");
+        }
+
+        node.on("close", function() {
+            node.status({fill:"red", shape:"ring", text:"Closing..."});
+        });
+
+    }
+    RED.nodes.registerType("ener002",ener002);
+
+
+
+    function pimote(n) {
+        RED.nodes.createNode(this,n);
+        var node = this;
+        node.board = n.board;
+        node.defaultpins = n.defaultpins || false;
+        node.d0 = n.d0 || 0;
+        node.d1 = n.d1 || 0;
+        node.d2 = n.d2 || 0;
+        node.d3 = n.d3 || 0;
+        node.modsel = n.modsel || 0;
+        node.enable = n.enable || 0;
+
+        if (RED.settings.verbose) {
+            node.log("board type: '"+node.board+"'");
+            node.log("use default pins: '"+node.defaultpins+"'");
+            node.log("node name: '"+n.name+"'");
+        }
+
+        if (node.board == "ener314") {
+            node.child = spawn(gpioCommand, []);
             node.running = true;
             node.done = false;
 
-            node.on("input", inputlistener);
-
             node.child.stdout.on('data', function (data) {
-                var text=data.toString().trim();
-                if (RED.settings.verbose) { node.log("output: '"+text+"'"); }
-                if (text == "Starting background thread...") { node.status({fill:"green",shape:"dot",text:"OK"}); }
+                var text=data.toString().trim().split('\n');
+                for (var i = 0; i < text.length; i++) {
+                    if (RED.settings.verbose) { node.log("output: '"+text[i]+"'"); }
+                }
             });
 
             node.child.stderr.on('data', function (data) {
-                var text=data.toString().trim();
-                if (RED.settings.verbose) { node.log("error: '"+text+"'"); }
+                var text=data.toString().trim().split('\n');
+                for (var i = 0; i < text.length; i++) {
+                    if (RED.settings.verbose) { node.log("error: '"+text[i]+"'"); }
+                }
             });
 
             node.child.on('close', function (code, signal) {
-                node.status({fill:"red", shape:"dot", text:"Closed"});
                 if (RED.settings.verbose) {
                     if (code != null) node.log("close: code '"+code+"'");
                     if (signal != null) node.log("close: signal '"+signal+"'");
@@ -123,91 +179,20 @@ module.exports = function(RED) {
             });
 
         } else {
-            node.error("Invalid ENER314 socket: "+node.socket);
+            node.error("Unknown Pi-mote board type: '"+node.board+"'");
         }
 
         node.on("close", function(done) {
+            if (RED.settings.verbose) { node.log("closing..."); }
             if (node.child != null) {
                 node.done = done;
                 // node.child.stdin.write("exit");
                 node.child.kill('SIGKILL');
                 // node.child.kill('SIGINT');
-            }
-            node.status({fill:"red", shape:"ring", text:"Closing..."});
-            if (RED.settings.verbose) { node.log("closing..."); }
-            if (node.child == null) { done(); }
-        });
-
-    }
-    RED.nodes.registerType("ener002",ener002);
-
-
-
-    function pimote(n) {
-        RED.nodes.createNode(this,n);
-        this.board = n.board;
-        this.defaultpins = n.defaultpins || false;
-        this.d0 = n.d0 || 0;
-        this.d1 = n.d1 || 0;
-        this.d2 = n.d2 || 0;
-        this.d3 = n.d3 || 0;
-        this.modsel = n.modsel || 0;
-        this.enable = n.enable || 0;
-        var node = this;
-        if (RED.settings.verbose) {
-            node.log("board type: '"+this.board+"'");
-            node.log("use default pins: '"+this.defaultpins+"'");
-            node.log("node name: '"+n.name+"'");
-        }
-
-/*
-        if (node.socket !== undefined) {
-            node.child = spawn(gpioCommand, []);
-            if (node.set) {
-                node.child.stdin.write(node.socket+" "+node.state+"\n");
-                node.status({fill:"green",shape:"ring",text:node.state});
             } else {
-                node.status({fill:"green",shape:"ring",text:"OK"});
+                done();
             }
-            node.running = true;
-
-            node.on("input", inputlistener);
-
-            node.child.stdout.on('data', function (data) {
-                if (RED.settings.verbose) { node.log("out: '"+data+"'"); }
-                if (data.toString().trim() == "Starting background thread...") { node.status({fill:"green",shape:"dot",text:"OK"}); }
-            });
-
-            node.child.stderr.on('data', function (data) {
-                if (RED.settings.verbose) { node.log("err: '"+data+"'"); }
-            });
-
-            node.child.on('close', function (code) {
-                if (RED.settings.verbose) { node.log("ret: '"+code+"'"); }
-                node.child = null;
-                node.running = false;
-                node.status({fill:"red", shape:"ring", text:"Closed"});
-            });
-
-            node.child.on('error', function (err) {
-                if (err.errno === "ENOENT") { node.warn('Command not found'); }
-                else if (err.errno === "EACCES") { node.warn('Command not executable'); }
-                else { node.log('error: ' + err); }
-            });
-
-        } else {
-            node.error("Invalid ENER314 socket: "+node.socket);
-        }
-
-        node.on("close", function() {
-            if (node.child != null) {
-                node.child.stdin.write("exit");
-                node.child.kill('SIGKILL');
-            }
-            node.status({fill:"red", shape:"dot", text:"Closed"});
-            if (RED.settings.verbose) { node.log("end"); }
         });
-*/
 
     }
     RED.nodes.registerType("pimote",pimote);
