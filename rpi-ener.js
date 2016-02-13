@@ -34,7 +34,7 @@ module.exports = function(RED) {
 
     if ( !(1 & parseInt ((fs.statSync(gpioCommand).mode & parseInt ("777", 8)).toString (8)[0]) )) {
         util.log("[rpi-ener314] Error : "+gpioCommand+" needs to be executable.");
-        throw "Error : ever314.py needs to be executable.";
+        throw "Error : ener314 script needs to be executable.";
     }
 
 
@@ -118,8 +118,8 @@ module.exports = function(RED) {
 
         if (this.pimote) {
             // Pi-mote node configured! :-)
-            if (RED.settings.verbose) { node.log("Pi-mote node: "+n.pimote); }
-            if (RED.settings.verbose) { node.log("Pi-mote board: "+node.pimote.board); }
+            if (RED.settings.verbose) { node.log("Pi-mote node: '"+n.pimote+"'"); }
+            if (RED.settings.verbose) { node.log("Pi-mote board: '"+node.pimote.board+"'"); }
         } else {
             // No Pi-mote node configured...
             if (RED.settings.verbose) { node.log("No Pi-mote node configured..."); }
@@ -131,7 +131,7 @@ module.exports = function(RED) {
             var out = msg.payload.toString().trim().toLowerCase();
             if (out == "on" || out == "off") {
                 out = "O"+out.substring(1);
-                if (RED.settings.verbose) { node.log("inp: "+msg.payload); }
+                if (RED.settings.verbose) { node.log("input: '"+msg.payload+"' => '"+out+"'"); }
                 if (node.child !== null) {
                     node.child.stdin.write(this.socket+" "+out+"\n");
                     node.status({fill:"green", shape:"ring", text:out});
@@ -140,7 +140,7 @@ module.exports = function(RED) {
                     node.status({fill:"red", shape:"dot", text:"Not Running"});
                 }
             }
-            else { node.warn("Invalid input: "+out); }
+            else { node.warn("Invalid input: '"+out+"'"); }
         }
 
         if (node.socket !== undefined) {
@@ -157,20 +157,32 @@ module.exports = function(RED) {
             node.on("input", inputlistener);
 
             node.child.stdout.on('data', function (data) {
-                if (RED.settings.verbose) { node.log("out: "+data+" :"); }
-                if (data.toString().trim() == "Starting background thread...") { node.status({fill:"green",shape:"dot",text:"OK"}); }
+                var text=data.toString().trim();
+                if (RED.settings.verbose) { node.log("output: '"+text+"'"); }
+                if (text == "Starting background thread...") { node.status({fill:"green",shape:"dot",text:"OK"}); }
             });
 
             node.child.stderr.on('data', function (data) {
-                if (RED.settings.verbose) { node.log("err: "+data+" :"); }
+                var text=data.toString().trim();
+                if (RED.settings.verbose) { node.log("error: '"+text+"'"); }
             });
 
-            node.child.on('close', function (code) {
-                if (RED.settings.verbose) { node.log("ret: "+code+" :"); }
+            node.child.on('close', function (code, signal) {
+                node.status({fill:"red", shape:"dot", text:"Closed"});
+                if (RED.settings.verbose) {
+                    if (code != null) node.log("close: code '"+code+"'");
+                    if (signal != null) node.log("close: signal '"+signal+"'");
+                }
                 node.child = null;
                 node.running = false;
-                node.status({fill:"red", shape:"dot", text:"Closed"});
                 if (node.done) { node.done(); }
+            });
+
+            node.child.on('exit', function (code, signal) {
+                if (RED.settings.verbose) {
+                    if (code != null) node.log("exit: code '"+code+"'");
+                    if (signal != null) node.log("exit: signal '"+signal+"'");
+                }
             });
 
             node.child.on('error', function (err) {
@@ -191,7 +203,7 @@ module.exports = function(RED) {
                 // node.child.kill('SIGINT');
             }
             node.status({fill:"red", shape:"ring", text:"Closing..."});
-            if (RED.settings.verbose) { node.log("end"); }
+            if (RED.settings.verbose) { node.log("closing..."); }
             if (node.child == null) { done(); }
         });
 
@@ -212,9 +224,9 @@ module.exports = function(RED) {
         this.enable = n.enable || 0;
         var node = this;
         if (RED.settings.verbose) {
-            node.log("board type: "+this.board+" :");
-            node.log("use default pins: "+this.defaultpins+" :");
-            node.log("node name: "+n.name+" :");
+            node.log("board type: '"+this.board+"'");
+            node.log("use default pins: '"+this.defaultpins+"'");
+            node.log("node name: '"+n.name+"'");
         }
 
 /*
@@ -231,16 +243,16 @@ module.exports = function(RED) {
             node.on("input", inputlistener);
 
             node.child.stdout.on('data', function (data) {
-                if (RED.settings.verbose) { node.log("out: "+data+" :"); }
+                if (RED.settings.verbose) { node.log("out: '"+data+"'"); }
                 if (data.toString().trim() == "Starting background thread...") { node.status({fill:"green",shape:"dot",text:"OK"}); }
             });
 
             node.child.stderr.on('data', function (data) {
-                if (RED.settings.verbose) { node.log("err: "+data+" :"); }
+                if (RED.settings.verbose) { node.log("err: '"+data+"'"); }
             });
 
             node.child.on('close', function (code) {
-                if (RED.settings.verbose) { node.log("ret: "+code+" :"); }
+                if (RED.settings.verbose) { node.log("ret: '"+code+"'"); }
                 node.child = null;
                 node.running = false;
                 node.status({fill:"red", shape:"ring", text:"Closed"});
